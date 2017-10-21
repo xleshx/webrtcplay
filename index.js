@@ -31,10 +31,27 @@ io.sockets.on('connection', function(socket) {
     socket.emit('log', array);
   }
 
+  function updateClientsList(disconect) {
+    var clients = ['Users count = ' + io.sockets.sockets.length];
+    io.sockets.sockets.forEach(function(client) {
+        clients.push(client.id)
+    });
+    if (disconect) {
+        socket.broadcast.emit('update_client_list', clients);
+    } else {
+        socket.emit('update_client_list', clients);
+    }
+  }
+
   socket.on('message', function(message) {
     log('Client said: ', message);
     // for a real app, would be room-only (not broadcast)
     socket.broadcast.emit('message', message);
+  });
+
+  socket.on('done', function(message) {
+    var disconect = false;
+    updateClientsList(disconect);
   });
 
   socket.on('create or join', function(room) {
@@ -71,7 +88,9 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('bye', function(){
-    console.log('received bye');
+    socket.disconnect();
+    var disconect = true;
+    updateClientsList(disconect);
   });
 
 });

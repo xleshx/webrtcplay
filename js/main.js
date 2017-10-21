@@ -17,6 +17,8 @@ var sendBtn = document.getElementById('send');
 var toSend = document.getElementById('dataChannelSend');
 var toShow = document.getElementById('dataChannelReceive');
 
+var clientsList = document.getElementById('clients');
+
 // Attach event handlers
 sendBtn.addEventListener('click', sendData);
 
@@ -59,9 +61,15 @@ socket.on('full', function(room) {
   window.location.reload();
 });
 
+socket.on('update_client_list', function(clients) {
+    console.log('update_client_list:', clients);
+    clientsList.value = clients;
+});
+
 socket.on('ready', function() {
   console.log('Socket is ready');
   createPeerConnection(isInitiator, configuration);
+  socket.emit('done');
 });
 
 socket.on('log', function(array) {
@@ -202,3 +210,8 @@ function randomToken() {
 function logError(err) {
   console.log(err.toString(), err);
 }
+
+
+window.addEventListener("beforeunload", function (e) {
+    socket.emit('bye');
+});
