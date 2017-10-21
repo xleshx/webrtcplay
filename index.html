@@ -13,20 +13,14 @@
 
   <h1>Realtime communication with WebRTC</h1>
 
-  <div id="videoCanvas">
-    <video id="camera" autoplay></video>
-    <canvas id="photo"></canvas>
-  </div>
-
   <div id="buttons">
-    <button id="snap">Snap</button><span> then </span><button id="send">Send</button>
-    <span> or </span>
-    <button id="snapAndSend">Snap &amp; Send</button>
+    <button id="send">Send</button>
   </div>
 
   <div id="incoming">
-    <h2>Incoming photos</h2>
-    <div id="trail"></div>
+    <h2>Exchange</h2>
+    <textarea id="dataChannelSend" placeholder="Put any txt here"></textarea>
+    <textarea id="dataChannelReceive" disabled></textarea>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>

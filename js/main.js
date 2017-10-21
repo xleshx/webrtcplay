@@ -13,21 +13,12 @@
 var configuration = null;
 
 // var roomURL = document.getElementById('url');
-var video = document.querySelector('video');
-var photo = document.getElementById('photo');
-var photoContext = photo.getContext('2d');
-var trail = document.getElementById('trail');
-var snapBtn = document.getElementById('snap');
 var sendBtn = document.getElementById('send');
-var snapAndSendBtn = document.getElementById('snapAndSend');
-
-var photoContextW;
-var photoContextH;
+var toSend = document.getElementById('dataChannelSend');
+var toShow = document.getElementById('dataChannelReceive');
 
 // Attach event handlers
-snapBtn.addEventListener('click', snapPhoto);
-sendBtn.addEventListener('click', sendPhoto);
-snapAndSendBtn.addEventListener('click', snapAndSend);
+sendBtn.addEventListener('click', sendData);
 
 // Create a random room if not already present in the URL.
 var isInitiator;
@@ -52,14 +43,14 @@ socket.on('ipaddr', function(ipaddr) {
 socket.on('created', function(room, clientId) {
   console.log('Created room', room, '- my client ID is', clientId);
   isInitiator = true;
-  grabWebCamVideo();
+  // grabWebCamVideo();
 });
 
 socket.on('joined', function(room, clientId) {
   console.log('This peer has joined room', room, 'with client ID', clientId);
   isInitiator = false;
   createPeerConnection(isInitiator, configuration);
-  grabWebCamVideo();
+  // grabWebCamVideo();
 });
 
 socket.on('full', function(room) {
@@ -110,34 +101,6 @@ function sendMessage(message) {
 //   roomURL.innerHTML = url;
 // }
 
-/****************************************************************************
-* User media (webcam)
-****************************************************************************/
-
-function grabWebCamVideo() {
-  console.log('Getting user media (video) ...');
-  navigator.mediaDevices.getUserMedia({
-    audio: false,
-    video: true
-  })
-  .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
-  });
-}
-
-function gotStream(stream) {
-  var streamURL = window.URL.createObjectURL(stream);
-  console.log('getUserMedia video stream URL:', streamURL);
-  window.stream = stream; // stream available to console
-  video.src = streamURL;
-  video.onloadedmetadata = function() {
-    photo.width = photoContextW = video.videoWidth;
-    photo.height = photoContextH = video.videoHeight;
-    console.log('gotStream with with and height:', photoContextW, photoContextH);
-  };
-  show(snapBtn);
-}
 
 /****************************************************************************
 * WebRTC peer connection and data channel
@@ -188,19 +151,19 @@ function createPeerConnection(isInitiator, config) {
     }
   };
 
-if (isInitiator) {
-  console.log('Creating Data Channel');
-  dataChannel = peerConn.createDataChannel('photos');
-  onDataChannelCreated(dataChannel);
-
-  console.log('Creating an offer');
-  peerConn.createOffer(onLocalSessionCreated, logError);
-} else {
-  peerConn.ondatachannel = function(event) {
-    console.log('ondatachannel:', event.channel);
-    dataChannel = event.channel;
+  if (isInitiator) {
+    console.log('Creating Data Channel');
+    dataChannel = peerConn.createDataChannel('photos');
     onDataChannelCreated(dataChannel);
-  };
+
+    console.log('Creating an offer');
+    peerConn.createOffer(onLocalSessionCreated, logError);
+  } else {
+    peerConn.ondatachannel = function(event) {
+      console.log('ondatachannel:', event.channel);
+      dataChannel = event.channel;
+      onDataChannelCreated(dataChannel);
+    };
 }
 }
 
@@ -219,138 +182,17 @@ function onDataChannelCreated(channel) {
     console.log('CHANNEL opened!!!');
   };
 
-  channel.onmessage = (adapter.browserDetails.browser === 'firefox') ?
-  receiveDataFirefoxFactory() : receiveDataChromeFactory();
+  // show received data
+  channel.onmessage = function (event) {
+    console.log('Data received: ' + event.data);
+    toShow.value = event.data;
+  }
 }
 
-function receiveDataChromeFactory() {
-  var buf, count;
-
-  return function onmessage(event) {
-    if (typeof event.data === 'string') {
-      buf = window.buf = new Uint8ClampedArray(parseInt(event.data));
-      count = 0;
-      console.log('Expecting a total of ' + buf.byteLength + ' bytes');
-      return;
-    }
-
-    var data = new Uint8ClampedArray(event.data);
-    buf.set(data, count);
-
-    count += data.byteLength;
-    console.log('count: ' + count);
-
-    if (count === buf.byteLength) {
-// we're done: all data chunks have been received
-console.log('Done. Rendering photo.');
-renderPhoto(buf);
-}
-};
-}
-
-function receiveDataFirefoxFactory() {
-  var count, total, parts;
-
-  return function onmessage(event) {
-    if (typeof event.data === 'string') {
-      total = parseInt(event.data);
-      parts = [];
-      count = 0;
-      console.log('Expecting a total of ' + total + ' bytes');
-      return;
-    }
-
-    parts.push(event.data);
-    count += event.data.size;
-    console.log('Got ' + event.data.size + ' byte(s), ' + (total - count) +
-                ' to go.');
-
-    if (count === total) {
-      console.log('Assembling payload');
-      var buf = new Uint8ClampedArray(total);
-      var compose = function(i, pos) {
-        var reader = new FileReader();
-        reader.onload = function() {
-          buf.set(new Uint8ClampedArray(this.result), pos);
-          if (i + 1 === parts.length) {
-            console.log('Done. Rendering photo.');
-            renderPhoto(buf);
-          } else {
-            compose(i + 1, pos + this.result.byteLength);
-          }
-        };
-        reader.readAsArrayBuffer(parts[i]);
-      };
-      compose(0, 0);
-    }
-  };
-}
-
-
-/****************************************************************************
-* Aux functions, mostly UI-related
-****************************************************************************/
-
-function snapPhoto() {
-  photoContext.drawImage(video, 0, 0, photo.width, photo.height);
-  show(photo, sendBtn);
-}
-
-function sendPhoto() {
-// Split data channel message in chunks of this byte length.
-var CHUNK_LEN = 64000;
-console.log('width and height ', photoContextW, photoContextH);
-var img = photoContext.getImageData(0, 0, photoContextW, photoContextH),
-len = img.data.byteLength,
-n = len / CHUNK_LEN | 0;
-
-console.log('Sending a total of ' + len + ' byte(s)');
-dataChannel.send(len);
-
-// split the photo and send in chunks of about 64KB
-for (var i = 0; i < n; i++) {
-  var start = i * CHUNK_LEN,
-  end = (i + 1) * CHUNK_LEN;
-  console.log(start + ' - ' + (end - 1));
-  dataChannel.send(img.data.subarray(start, end));
-}
-
-// send the reminder, if any
-if (len % CHUNK_LEN) {
-  console.log('last ' + len % CHUNK_LEN + ' byte(s)');
-  dataChannel.send(img.data.subarray(n * CHUNK_LEN));
-}
-}
-
-function snapAndSend() {
-  snapPhoto();
-  sendPhoto();
-}
-
-function renderPhoto(data) {
-  var canvas = document.createElement('canvas');
-  canvas.width = photoContextW;
-  canvas.height = photoContextH;
-  canvas.classList.add('incomingPhoto');
-  // trail is the element holding the incoming images
-  trail.insertBefore(canvas, trail.firstChild);
-
-  var context = canvas.getContext('2d');
-  var img = context.createImageData(photoContextW, photoContextH);
-  img.data.set(data);
-  context.putImageData(img, 0, 0);
-}
-
-function show() {
-  Array.prototype.forEach.call(arguments, function(elem) {
-    elem.style.display = null;
-  });
-}
-
-function hide() {
-  Array.prototype.forEach.call(arguments, function(elem) {
-    elem.style.display = 'none';
-  });
+// send data
+function sendData() {
+  console.log('Sending data: ' + toSend.value);
+  dataChannel.send(toSend.value);
 }
 
 function randomToken() {
