@@ -4,13 +4,11 @@
 * Initial setup
 ****************************************************************************/
 
-// var configuration = {
-//   'iceServers': [{
-//     'urls': 'stun:stun.l.google.com:19302'
-//   }]
-// };
-
-var configuration = null;
+var configuration = {
+  'iceServers': [{
+    'urls': 'stun:stun.l.google.com:19302'
+  }]
+};
 
 // var roomURL = document.getElementById('url');
 var sendBtn = document.getElementById('send');
@@ -39,20 +37,18 @@ var socket = io.connect();
 
 socket.on('ipaddr', function(ipaddr) {
   console.log('Server IP address is: ' + ipaddr);
-  // updateRoomURL(ipaddr);
+  updateRoomURL(ipaddr);
 });
 
 socket.on('created', function(room, clientId) {
   console.log('Created room', room, '- my client ID is', clientId);
   isInitiator = true;
-  // grabWebCamVideo();
 });
 
 socket.on('joined', function(room, clientId) {
   console.log('This peer has joined room', room, 'with client ID', clientId);
   isInitiator = false;
   createPeerConnection(isInitiator, configuration);
-  // grabWebCamVideo();
 });
 
 socket.on('full', function(room) {
@@ -99,15 +95,15 @@ function sendMessage(message) {
 /**
 * Updates URL on the page so that users can copy&paste it to their peers.
 */
-// function updateRoomURL(ipaddr) {
-//   var url;
-//   if (!ipaddr) {
-//     url = location.href;
-//   } else {
-//     url = location.protocol + '//' + ipaddr + ':2013/#' + room;
-//   }
-//   roomURL.innerHTML = url;
-// }
+function updateRoomURL(ipaddr) {
+  var url;
+  if (!ipaddr) {
+    url = location.href;
+  } else {
+    url = location.protocol + '//' + ipaddr + ':4433/#' + room;
+  }
+  roomURL.innerHTML = url;
+}
 
 
 /****************************************************************************
