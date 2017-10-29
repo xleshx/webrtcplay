@@ -3,17 +3,24 @@
  * Signaling server
  ****************************************************************************/
 
+import io from 'socket.io-client';
+
+import { updateRoomURL, clientsList } from './ui.js'
+import { createPeerConnection, signalingMessageCallback } from './peer.js'
+
+export let isInitiator;
+
 // Connect to the signaling server
-var socket = io.connect();
+let socket = io.connect();
 
 //define clients socket.io sessionID
 socket.on('connect', function() {
-    sessionId = socket.io.engine.id;
+    let sessionId = socket.io.engine.id;
 });
 
 socket.on('ipaddr', function(ipaddr) {
     console.log('Server IP address is: ' + ipaddr);
-    updateRoomURL(ipaddr);
+    // updateRoomURL(ipaddr);
 });
 
 socket.on('created', function(room, clientId) {
@@ -24,12 +31,13 @@ socket.on('created', function(room, clientId) {
 socket.on('joined', function(room, clientId) {
     console.log('This peer has joined room', room, 'with client ID', clientId);
     isInitiator = false;
-    createPeerConnection(isInitiator, configuration);
+    createPeerConnection(isInitiator);
 });
 
 socket.on('ready', function() {
     console.log('Socket is ready');
-    createPeerConnection(isInitiator, configuration);
+    createPeerConnection(isInitiator);
+    socket.emit('done');
 });
 
 socket.on('log', function(array) {
@@ -41,9 +49,25 @@ socket.on('message', function(message) {
     signalingMessageCallback(message);
 });
 
-// Join a room
-socket.emit('create or join', room);
+socket.on('full', function(room) {
+    alert('Room ' + room + ' is full. We will create a new room for you.');
+    window.location.hash = '';
+    window.location.reload();
+});
 
-if (location.hostname.match(/localhost|127\.0\.0/)) {
-    socket.emit('ipaddr');
+socket.on('update_client_list', function(clients) {
+    console.log('update_client_list:', clients);
+    clientsList.value = clients;
+});
+
+export function emit(msg, obj) {
+    socket.emit(msg, obj);
+}
+
+/**
+ * Send message to signaling server
+ */
+export function sendMessage(message) {
+    console.log('Client sending message: ', message);
+    emit('message', message);
 }

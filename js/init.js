@@ -4,6 +4,7 @@ var sendBtn = document.getElementById('send');
 var toSend = document.getElementById('dataChannelSend');
 var chat = document.getElementById('chat');
 var clientsList = document.getElementById('clients');
+
 var room = window.location.hash.substring(1);
 if (room === '') {
     var randomRoom = randomToken();

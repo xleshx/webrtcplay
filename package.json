@@ -1,9 +1,21 @@
 {
-  "name": "webrtc-codelab",
-  "version": "0.0.1",
-  "description": "WebRTC codelab",
+  "name": "webrtc-play",
+  "version": "1.0.0",
+  "description": "WebRTC play",
+  "main": "src/index.js",
+  "devDependencies": {
+    "webpack": "^3.8.1"
+  },
   "dependencies": {
+    "i": "^0.3.6",
+    "lodash": "^4.17.4",
     "node-static": "0.7.10",
-    "socket.io": "1.2.0"
+    "npm": "^5.5.1",
+    "socket.io": "1.2.0",
+    "socket.io-client": "^2.0.4",
+    "webrtc-adapter": "^5.0.6"
+  },
+  "scripts": {
+    "build": "webpack"
   }
 }

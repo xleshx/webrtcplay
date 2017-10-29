@@ -1,11 +1,19 @@
 /****************************************************************************
  * WebRTC peer connection and data channel
  ****************************************************************************/
+import { sendMessage } from './signalling.js';
+import webrtc from 'webrtc-adapter';
 
-var peerConn;
-var dataChannel;
+let peerConn;
+let dataChannel;
 
-function signalingMessageCallback(message) {
+const configuration = {
+    'iceServers': [{
+        'urls': 'stun:stun.l.google.com:19302'
+    }]
+};
+
+export function signalingMessageCallback(message) {
     if (message.type === 'offer') {
         console.log('Got offer. Sending answer to peer.');
         peerConn.setRemoteDescription(new RTCSessionDescription(message), function() {},
@@ -27,12 +35,11 @@ function signalingMessageCallback(message) {
     }
 }
 
-function createPeerConnection(isInitiator, config) {
-    console.log('Creating Peer connection as initiator?', isInitiator, 'config:',
-        config);
-    peerConn = new RTCPeerConnection(config);
+export function createPeerConnection(isInitiator) {
+    console.log('Creating Peer connection as initiator?', isInitiator, 'config:', configuration);
+    peerConn = new RTCPeerConnection(configuration);
 
-// send any ice candidates to the other peer
+    // send any ice candidates to the other peer
     peerConn.onicecandidate = function(event) {
         console.log('icecandidate event:', event);
         if (event.candidate) {
@@ -63,6 +70,16 @@ function createPeerConnection(isInitiator, config) {
     }
 }
 
+function logError(err) {
+    console.log(err.toString(), err);
+}
+
+// send data
+export function sendData(data) {
+    console.log('Sending data: ' + data);
+    dataChannel.send(data);
+}
+
 function onLocalSessionCreated(desc) {
     console.log('local session created:', desc);
     peerConn.setLocalDescription(desc, function() {
@@ -83,10 +100,4 @@ function onDataChannelCreated(channel) {
         console.log('Data received: ' + event.data);
         chat.value = event.data;
     }
-}
-
-// send data
-function sendData() {
-    console.log('Sending data: ' + toSend.value);
-    dataChannel.send(toSend.value);
 }
