@@ -10,9 +10,9 @@ var socketIO = require('socket.io');
 var fileServer = new(nodeStatic.Server)();
 
 var options = {
-  key: fs.readFileSync('server-key.pem'),
-  cert: fs.readFileSync('server-crt.pem'),
-  ca: fs.readFileSync('ca-crt.pem')
+  key: fs.readFileSync('cert/server-key.pem'),
+  cert: fs.readFileSync('cert/server-crt.pem'),
+  ca: fs.readFileSync('cert/ca-crt.pem')
 };
 
 // https.createServer(options, app).listen(443);

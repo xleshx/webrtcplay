@@ -22,9 +22,11 @@ sendBtn.addEventListener('click', sendData);
 
 // Create a random room if not already present in the URL.
 var isInitiator;
+
 var room = window.location.hash.substring(1);
-if (!room) {
-  room = window.location.hash = randomToken();
+if (room === '') {
+    var randomRoom = randomToken();
+    room = prompt('Please specify the room name, otherwise you will use random one: '+randomRoom, randomRoom);
 }
 
 
