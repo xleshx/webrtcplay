@@ -15,15 +15,21 @@ var options = {
   ca: fs.readFileSync('cert/ca-crt.pem')
 };
 
-// https.createServer(options, app).listen(443);
-
 var app = https.createServer(options, function(req, res) {
   fileServer.serve(req, res);
 }).listen(4433);
 
 var io = socketIO.listen(app);
-io.sockets.on('connection', function(socket) {
+/*
+ * array of objects:
+ * {
+ *  id: <string>
+ *  room: <string>
+ * }
+ */
+var clients = [];
 
+io.sockets.on('connection', function(socket) {
   // convenience function to log server messages on the client
   function log() {
     var array = ['Message from server:'];
@@ -31,46 +37,35 @@ io.sockets.on('connection', function(socket) {
     socket.emit('log', array);
   }
 
-  function updateClientsList(disconect) {
-    var clients = ['Users count = ' + io.sockets.sockets.length];
-    io.sockets.sockets.forEach(function(client) {
-        clients.push(client.id)
-    });
-    if (disconect) {
-        socket.broadcast.emit('update_client_list', clients);
-    } else {
-        socket.emit('update_client_list', clients);
-    }
+  function getClientsCountInRoom(room) {
+      var clientCount = 0;
+      for(var key in clients) {
+          if (clients[key].room === room) {
+              clientCount++;
+          }
+      }
+      return clientCount;
   }
 
   socket.on('message', function(message) {
-    log('Client said: ', message);
-    // for a real app, would be room-only (not broadcast)
     socket.broadcast.emit('message', message);
   });
 
-  socket.on('done', function(message) {
-    var disconect = false;
-    updateClientsList(disconect);
-  });
 
   socket.on('create or join', function(room) {
-    log('Received request to create or join room ' + room);
-
-    var numClients = io.sockets.sockets.length;
-    log('Room ' + room + ' now has ' + numClients + ' client(s)');
+    clients.push({id: socket.id, room: room});
+    var numClients = getClientsCountInRoom(room);
+    console.log('connected:', numClients, clients);
 
     if (numClients === 1) {
       socket.join(room);
-      log('Client ID ' + socket.id + ' created room ' + room);
       socket.emit('created', room, socket.id);
     } else {
-      log('Client ID ' + socket.id + ' joined room ' + room);
-      // io.sockets.in(room).emit('join', room);
-      socket.join(room);
-      socket.emit('joined', room, socket.id);
-      io.sockets.in(room).emit('ready', room);
-      socket.broadcast.emit('ready', room);
+        socket.join(room);
+        socket.emit('joined', room, socket.id);
+
+        io.sockets.in(room).emit('ready', room);
+        socket.broadcast.emit('ready', room);
     }
   });
 
@@ -85,10 +80,13 @@ io.sockets.on('connection', function(socket) {
     }
   });
 
-  socket.on('bye', function(){
-    socket.disconnect();
-    var disconect = true;
-    updateClientsList(disconect);
+  socket.on('disconnect', function () {
+    clients = clients.filter(function(item) {
+        return item.id !== socket.id
+    });
+
+    console.log('disconnected:', clients);
+    socket.disconnect(true);
   });
 
 });

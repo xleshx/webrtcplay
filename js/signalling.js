@@ -27,21 +27,9 @@ socket.on('joined', function(room, clientId) {
     createPeerConnection(isInitiator, configuration);
 });
 
-socket.on('full', function(room) {
-    alert('Room ' + room + ' is full. We will create a new room for you.');
-    window.location.hash = '';
-    window.location.reload();
-});
-
-socket.on('update_client_list', function(clients) {
-    console.log('update_client_list:', clients);
-    clientsList.value = clients;
-});
-
 socket.on('ready', function() {
     console.log('Socket is ready');
     createPeerConnection(isInitiator, configuration);
-    socket.emit('done');
 });
 
 socket.on('log', function(array) {
