@@ -7,7 +7,7 @@ const fs = require('fs');
 
 var socketIO = require('socket.io');
 
-var fileServer = new(nodeStatic.Server)();
+var fileServer = new(nodeStatic.Server)('./dist');
 
 var options = {
   key: fs.readFileSync('cert/server-key.pem'),
