@@ -13,9 +13,9 @@ var configuration = {
 // var roomURL = document.getElementById('url');
 var sendBtn = document.getElementById('send');
 var toSend = document.getElementById('dataChannelSend');
-var chat = document.getElementById('chat')
-
+var chat = document.getElementById('chat');
 var clientsList = document.getElementById('clients');
+var sessionId = null;
 
 // Attach event handlers
 sendBtn.addEventListener('click', sendData);
@@ -36,6 +36,11 @@ if (room === '') {
 
 // Connect to the signaling server
 var socket = io.connect();
+
+//define clients socket.io sessionID
+socket.on('connect', function() {
+    sessionId = socket.io.engine.id;
+});
 
 socket.on('ipaddr', function(ipaddr) {
   console.log('Server IP address is: ' + ipaddr);
