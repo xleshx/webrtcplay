@@ -12,20 +12,14 @@
 <body>
 
   <h1>Realtime communication with WebRTC</h1>
-
-  <div id="buttons">
-    <button id="send">Send</button>
-  </div>
-
-
+  <div id="roomURL"></div>
   <div id="exchange">
-    <h2>Exchange</h2>
-    <div id="roomURL"></div>
-
     <textarea id="dataChannelSend" placeholder="Put any txt here"></textarea>
-    <div class="chat"></div>
+    <div id="buttons">
+      <button id="send">Send</button>
+    </div>
 
-    <!--<textarea id="dataChannelReceive" disabled></textarea>-->
+    <textarea id="chat" disabled></textarea>
     <textarea id="clients"></textarea>
   </div>
 

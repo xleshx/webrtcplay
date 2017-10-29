@@ -13,7 +13,7 @@ var configuration = {
 // var roomURL = document.getElementById('url');
 var sendBtn = document.getElementById('send');
 var toSend = document.getElementById('dataChannelSend');
-var toShow = document.getElementById('dataChannelReceive');
+var chat = document.getElementById('chat')
 
 var clientsList = document.getElementById('clients');
 
@@ -133,8 +133,8 @@ function signalingMessageCallback(message) {
     }));
 
   } else if (message === 'bye') {
-// TODO: cleanup RTC connection?
-}
+    // TODO: cleanup RTC connection?
+  }
 }
 
 function createPeerConnection(isInitiator, config) {
@@ -191,7 +191,7 @@ function onDataChannelCreated(channel) {
   // show received data
   channel.onmessage = function (event) {
     console.log('Data received: ' + event.data);
-    toShow.value = event.data;
+    chat.value = event.data;
   }
 }
 
