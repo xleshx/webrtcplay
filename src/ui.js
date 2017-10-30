@@ -1,5 +1,7 @@
 import { sendData } from './peer.js'
 
+import './style.css';
+
 const roomURL = document.getElementById('url');
 
 export const sendBtn = document.getElementById('send');

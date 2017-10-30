@@ -142,4 +142,3 @@ fabric.properties
 package-lock.json
 
 dist/*
-!dist/index.html
