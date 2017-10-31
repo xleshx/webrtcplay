@@ -3,7 +3,8 @@
  ****************************************************************************/
 import { sendMessage } from './signalling.js';
 import webrtc from 'webrtc-adapter';
-
+import { showMessage } from './actions';
+import { dispatchAction } from './store'
 let peerConn;
 let dataChannel;
 
@@ -98,6 +99,7 @@ function onDataChannelCreated(channel) {
     // show received data
     channel.onmessage = function (event) {
         console.log('Data received: ' + event.data);
-        chat.value = event.data;
+        dispatchAction(showMessage("default peer", event.data));
+        //chat.value = event.data;
     }
 }

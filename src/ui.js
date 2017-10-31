@@ -1,4 +1,4 @@
-import { sendData } from './peer.js'
+import { sendData } from './peer.js';
 
 import './style.css';
 
@@ -14,6 +14,8 @@ sendBtn.addEventListener('click', function(){
     sendData(toSend.value);
 });
 
+
+
 /**
  * Updates URL on the page so that users can copy&paste it to their peers.
  */
@@ -27,3 +29,6 @@ export function updateRoomURL(ipaddr) {
     roomURL.innerHTML = url;
 }
 
+export function updateChat(obj) {
+    chat.value = JSON.stringify(obj, null, 2);
+}
