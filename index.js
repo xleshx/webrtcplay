@@ -1,25 +1,41 @@
 'use strict';
 
-var os = require('os');
-var nodeStatic = require('node-static');
-var https = require('https');
+const os = require('os');
+const https = require('https');
 const fs = require('fs');
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require('webpack-hot-middleware');
 
-var socketIO = require('socket.io');
+const config = require('./webpack.config.js');
+const compiler = webpack(config);
 
-var fileServer = new(nodeStatic.Server)('./dist');
+const socketIO = require('socket.io');
 
-var options = {
+let app = require('express')();
+
+app.use(webpackDevMiddleware(compiler, {
+    publicPath: config.output.publicPath,
+    stats: {colors: true}
+}));
+
+app.use(webpackHotMiddleware(compiler, {
+    log: console.log
+}));
+
+app.get('/', function (req, res) {
+    res.sendfile(__dirname + '/index.html');
+});
+
+const options = {
   key: fs.readFileSync('cert/server-key.pem'),
   cert: fs.readFileSync('cert/server-crt.pem'),
   ca: fs.readFileSync('cert/ca-crt.pem')
 };
 
-var app = https.createServer(options, function(req, res) {
-  fileServer.serve(req, res);
-}).listen(4433);
+let server = https.createServer(options, app).listen(4433);
 
-var io = socketIO.listen(app);
+var io = socketIO.listen(server);
 /*
  * array of objects:
  * {
