@@ -1,7 +1,7 @@
 const os = require('os');
 const _ = require('lodash');
 
-module.exports.getServerIps = function (){
+module.exports.getServerIp = function (){
     let networkFilter = function (details) {
         return details.family === 'IPv4' && details.address !== '127.0.0.1'
     };

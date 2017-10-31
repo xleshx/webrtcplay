@@ -14,7 +14,7 @@ const compiler = webpack(wpConfig);
 const socketIO = require('socket.io');
 
 const app = require('express')();
-const util = require('./utils.js');
+const util = require('./util.js');
 
 const SSL_PORT = 8443;
 
@@ -40,7 +40,7 @@ const options = {
 };
 
 let server = https.createServer(options, app).listen(SSL_PORT);
-console.log('server is up on https://%s:%s', util.getServerIps(), SSL_PORT);
+console.log('server is up on https://%s:%s', util.getServerIp(), SSL_PORT);
 
 var io = socketIO.listen(server);
 /*
@@ -93,14 +93,7 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('ipaddr', function() {
-      const ifaces = os.networkInterfaces();
-      for (var dev in ifaces) {
-      ifaces[dev].forEach(function(details) {
-        if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
-          socket.emit('ipaddr', details.address);
-        }
-      });
-    }
+    socket.emit('ipaddr', util.getServerIp());
   });
 
   socket.on('disconnect', function () {
