@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
         new CleanWebpackPlugin(['dist']),
         new ExtractTextPlugin("style.css"),
         new HtmlWebpackPlugin({
-            title: 'Output Management',
+            title: 'Web RTC smth',
             template: './src/index.html',
             hash: true
         })

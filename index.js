@@ -3,24 +3,30 @@
 const os = require('os');
 const https = require('https');
 const fs = require('fs');
-const webpack = require('webpack');
+
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 
-const config = require('./webpack.config.js');
-const compiler = webpack(config);
+const webpack = require('webpack');
+const wpConfig = require('./webpack.config.js');
+const compiler = webpack(wpConfig);
 
 const socketIO = require('socket.io');
 
-let app = require('express')();
+const app = require('express')();
+const util = require('./utils.js');
+
+const SSL_PORT = 8443;
 
 app.use(webpackDevMiddleware(compiler, {
-    publicPath: config.output.publicPath,
+    publicPath: wpConfig.output.publicPath,
     stats: {colors: true}
 }));
 
 app.use(webpackHotMiddleware(compiler, {
-    log: console.log
+    log: console.log,
+    path: '/__webpack_hmr',
+    heartbeat: 10 * 1000
 }));
 
 app.get('/', function (req, res) {
@@ -33,7 +39,8 @@ const options = {
   ca: fs.readFileSync('cert/ca-crt.pem')
 };
 
-let server = https.createServer(options, app).listen(4433);
+let server = https.createServer(options, app).listen(SSL_PORT);
+console.log('server is up on https://%s:%s', util.getServerIps(), SSL_PORT);
 
 var io = socketIO.listen(server);
 /*
@@ -86,8 +93,8 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('ipaddr', function() {
-    var ifaces = os.networkInterfaces();
-    for (var dev in ifaces) {
+      const ifaces = os.networkInterfaces();
+      for (var dev in ifaces) {
       ifaces[dev].forEach(function(details) {
         if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
           socket.emit('ipaddr', details.address);
@@ -104,5 +111,4 @@ io.sockets.on('connection', function(socket) {
     console.log('disconnected:', clients);
     socket.disconnect(true);
   });
-
 });
