@@ -100,6 +100,5 @@ function onDataChannelCreated(channel) {
     channel.onmessage = function (event) {
         console.log('Data received: ' + event.data);
         dispatchAction(showMessage("default peer", event.data));
-        //chat.value = event.data;
     }
 }

@@ -29,7 +29,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.jsx$/,
+                test: /\.js|jsx$/,
                 exclude: /node_modules/,
                 use: [
                     'babel-loader',
@@ -66,7 +66,8 @@ module.exports = {
                 use: [
                     'babel!react-pure-html-component',
                 ],
-            },
+            }
+            ,
             {
                 test: /\.css$/,
                 use: ExtractTextPlugin.extract({
