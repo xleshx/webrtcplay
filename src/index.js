@@ -1,13 +1,7 @@
 import { emit } from './signalling.js';
 import { randomToken } from './util.js';
-import React from 'react';
-import ReactDOM from 'react-dom';
 
-ReactDOM.render(
-<h1>Hello, world!</h1>,
-    document.getElementById('root')
-);
-
+// import 'bootstrap/dist/css/bootstrap.min.css';
 export let room = window.location.hash.substring(1);
 if (room === '') {
     const randomRoom = randomToken();

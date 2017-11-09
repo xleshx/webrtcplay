@@ -11,13 +11,16 @@
   <div id="root"></div>
   <div id="url"></div>
   <div id="exchange">
-    <textarea id="dataChannelSend" placeholder="Put any txt here"></textarea>
-    <div id="buttons">
-      <button id="send">Send</button>
+    <div id="chatView">
+      <textarea id="chat" disabled></textarea>
     </div>
-
-    <textarea id="chat" disabled></textarea>
-    <textarea id="clients"></textarea>
+    <div id="output">
+        <textarea id="dataChannelSend" placeholder="Put any txt here"></textarea>
+        <button id="send">Send</button>
+    </div>
+    <div id="buttons">
+    </div>
+    <textarea id="clients" placeholder="Clients list"></textarea>
   </div>
 </body>
 
