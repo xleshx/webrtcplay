@@ -19,29 +19,83 @@ sendBtn.addEventListener('click', function(){
 class Chat extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { messages: [{peer: "defPeer", text:"Helllou!"}]};
+        this.onSubmitMessage = this.onSubmitMessage.bind(this);
+
+        this.state = {
+            chatMessages: [
+                {peer: "defPeer", text:"Helllou!", datetime: new Date()},
+            ],
+            message: '',
+        };
     }
 
-    update(state){
-        this.setState(state);
+    onSubmitMessage(message) {
+        var messages = this.state.chatMessages.slice();
+        messages.push({peer:"test", text: message, datetime: new Date()});
+        this.setState({chatMessages: messages, message: ''});
     }
 
     render() {
-        let list = this.state.messages.map(function(msg){
-            return <li>From: {msg.peer}, Message: {msg.text}</li>;
-        });
-        return  <ul>{list}</ul>;
-
-        // (
-        //     <div>
-        //         <h1>From: {this.state.peer}</h1>
-        //         <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
-        //     </div>
-        // );
+        return (
+            <div>
+                <ChatMessageInput message={this.state.message} onSubmitMessage={this.onSubmitMessage} />
+                <ChatMessagesList messages={this.state.chatMessages}/>
+            </div>
+        )
     }
 }
 
-let chat =ReactDOM.render(
+class ChatMessagesList extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        let list = this.props.messages.map(function(msg) {
+            return <li>{msg.datetime.toLocaleString()} - (From: {msg.peer}): {msg.text} </li>;
+        });
+
+        return <ul>{list}</ul>;
+    }
+}
+
+class ChatMessageInput extends React.Component {
+    constructor(props) {
+        super(props);
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.state = {message: props.message, isDisabled: props.message.length == 0};
+    }
+
+    handleChange(e) {
+        let state = {message: e.target.value, isDisabled: false};
+        if (e.target.value.length == 0) {
+            state.isDisabled = true;
+        }
+        this.setState(state);
+    }
+
+    handleSubmit(e) {
+        if (this.state.message.length > 0) {
+            this.props.onSubmitMessage(this.state.message);
+            this.setState({message: '', isDisabled: true});
+        }
+    }
+
+    render() {
+        const message = this.state.message;
+        const sendDisabled = this.state.isDisabled;
+        return (
+            <fieldset>
+                <legend>Enter message to send to chat:</legend>
+                <input value={message} onChange={this.handleChange} />
+                <button onClick={this.handleSubmit} disabled={sendDisabled}>Send mesage</button>
+            </fieldset>
+        )
+    }
+}
+
+let chat = ReactDOM.render(
     <Chat/>,
     document.getElementById('root')
 );
