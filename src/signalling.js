@@ -16,6 +16,7 @@ let socket = io.connect();
 //define clients socket.io sessionID
 socket.on('connect', function() {
     let sessionId = socket.io.engine.id;
+    console.log('Client session id:', sessionId);
 });
 
 socket.on('ipaddr', function(ipaddr) {
